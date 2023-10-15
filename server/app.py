@@ -4,6 +4,7 @@ from flask import Flask, make_response, jsonify
 from flask_migrate import Migrate
 from sqlalchemy import desc
 
+
 from models import db, Bakery, BakedGood
 
 app = Flask(__name__)
@@ -23,9 +24,11 @@ def index():
 def bakeries():
     
     bakeries = Bakery.query.all()
-    
-    bakeries_serialized = [bakery.to_dict() for bakery in bakeries]
-    response = make_response(jsonify(bakeries_serialized), 200)
+    if bakeries:
+        bakeries_serialized = [bakery.to_dict() for bakery in bakeries]
+        response = make_response(jsonify(bakeries_serialized), 200)
+    else: 
+        response = make_response(jsonify(bakeries=[]), 200)
     response.headers['Content-Type'] = 'application/json'
 
 
@@ -40,6 +43,7 @@ def bakery_by_id(id):
     else:
         response = make_response(f'Bakery {id} not found', 404)
 
+    response.headers['Content-Type'] = 'application/json'
     return response
 
 @app.route('/baked_goods/by_price')
@@ -49,15 +53,16 @@ def baked_goods_by_price():
     goods_serialized = [good.to_dict() for good in goods]
 
     response = make_response(jsonify(goods_serialized), 200)
+    response.headers['Content-Type'] = 'application/json'
     return response
 
 @app.route('/baked_goods/most_expensive')
 def most_expensive_baked_good():
     
     goods = BakedGood.query.order_by(desc(BakedGood.price)).first()
-
-
-    response = make_response(jsonify(goods.to_dict()), 200)
+    goods_serialized = goods.to_dict() 
+    response = make_response(jsonify(goods_serialized), 200)
+    response.headers['Content-Type'] = 'application/json'
     return response
 
 if __name__ == '__main__':
